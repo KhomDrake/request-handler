@@ -2,14 +2,17 @@ package br.com.khomdrake.request_handler
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import androidx.annotation.WorkerThread
 import br.com.khomdrake.request_handler.cache.DiskVault
 import br.com.khomdrake.request_handler.data.Response
 import br.com.khomdrake.request.data.flow.MutableResponseStateFlow
+import br.com.khomdrake.request_handler.cache.MemoryVault
 import br.com.khomdrake.request_handler.data.flow.ResponseStateFlow
 import br.com.khomdrake.request_handler.data.responseData
 import br.com.khomdrake.request_handler.data.responseError
 import br.com.khomdrake.request_handler.data.responseLoading
 import br.com.khomdrake.request_handler.log.LogHandler
+import br.com.khomdrake.request_handler.log.LogLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,8 +46,18 @@ class RequestHandler<Data>(
         config = Config<Data>(key).apply(func)
     }
 
-    fun logInfo(info: String) {
-        LogHandler.logInfo(key, info)
+    fun logInfo(message: String, level: LogLevel = LogLevel.ZERO) {
+        LogHandler.d(topic = "Request Handler: $key", message = message.take(200), level = level)
+    }
+
+    fun logInfo(message: String, area: String, level: LogLevel = LogLevel.ZERO) {
+        LogHandler.d(topic = "Request Handler: $key", message = "($area) ${message.take(200)}", level = level)
+    }
+
+    @WorkerThread
+    suspend fun executeData() = run {
+        logInfo("Request Handler - Execute Data")
+        config.executeData(this)
     }
 
     fun execute() = synchronized(lock) {
@@ -103,6 +116,11 @@ class RequestHandler<Data>(
             if(cleanCacheTimeout) DiskVault.clearCache()
         }
 
+        fun clear() {
+            DiskVault.clearCache()
+            MemoryVault.clearCache()
+        }
+
     }
 
 }
@@ -112,4 +130,12 @@ fun <T> requestHandler(
     scope: CoroutineScope = requestScope
 ) : RequestHandler<T> {
     return RequestHandler(scope, tag)
+}
+
+fun <T> requestHandler(
+    tag: String = "",
+    scope: CoroutineScope = requestScope,
+    func: Config<T>.() -> Unit
+) : RequestHandler<T> {
+    return RequestHandler<T>(scope, tag).config(func)
 }

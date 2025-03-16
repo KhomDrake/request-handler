@@ -2,6 +2,7 @@ package br.com.khomdrake.request_handler.cache
 
 import br.com.khomdrake.request_handler.CacheType
 import br.com.khomdrake.request_handler.log.LogHandler
+import br.com.khomdrake.request_handler.log.LogLevel
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -25,6 +26,8 @@ class Cache<Data> internal constructor(
             MemoryVault.setData(key, expirationDate)
         }
     }
+
+    fun cacheKey() = key
 
     fun setCacheKey(newKey: String) = apply {
         key = newKey
@@ -51,7 +54,11 @@ class Cache<Data> internal constructor(
     }
 
     private fun logInfo(info: String) {
-        LogHandler.logInfo(mainTag, info)
+        LogHandler.d(
+            topic = "Request Handler - $mainTag",
+            message = info,
+            level = LogLevel.THREE
+        )
     }
 
     suspend fun save(data: Data) = apply {

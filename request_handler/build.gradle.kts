@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "br.com.cosmind.request_handler"
+    namespace = "br.com.khomdrake.request_handler"
     compileSdk = 35
 
     defaultConfig {
