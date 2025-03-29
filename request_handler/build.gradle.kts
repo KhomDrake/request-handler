@@ -35,6 +35,9 @@ android {
 dependencies {
 
     implementation(libs.timber)
-    implementation(libs.androidx.datastore.preferences)
+    compileOnly(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
 }

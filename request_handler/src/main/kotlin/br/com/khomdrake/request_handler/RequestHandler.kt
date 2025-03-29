@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 private val requestScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 class RequestHandler<Data>(
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val key: String = ""
 ) {
 
