@@ -11,6 +11,7 @@ import br.com.khomdrake.request_handler.log.LogLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -26,7 +27,7 @@ class Config<Data>(private val key: String) {
     private var minDuration: Duration = 200.milliseconds
     private val withCache: Boolean
         get() = cache != null
-    private var execution: (suspend () -> Data)? = null
+    private var execution: (suspend CoroutineScope.() -> Data)? = null
     private var cache: Cache<Data>? = null
 
     fun maxDuration(duration: Duration) = apply {
@@ -42,7 +43,7 @@ class Config<Data>(private val key: String) {
             .apply(function)
     }
 
-    fun request(function: suspend () -> Data) = apply {
+    fun request(function: suspend CoroutineScope.() -> Data) = apply {
         execution = function
     }
 
@@ -159,7 +160,9 @@ class Config<Data>(private val key: String) {
         )
 
         val execution = execution ?: throw RequestNotImplementedException()
-        val data = execution.invoke()
+        val data = withContext(handler.scope.coroutineContext) {
+            execution.invoke(this)
+        }
         handler.logInfo(
             area = "Config",
             message = "Request ended, data: $data",
@@ -186,7 +189,9 @@ class Config<Data>(private val key: String) {
             level = LogLevel.ONE
         )
         val execution = execution ?: throw RequestNotImplementedException()
-        val data = execution.invoke()
+        val data = withContext(handler.scope.coroutineContext) {
+            execution.invoke(this)
+        }
         handler.logInfo(
             area = "Config",
             message = "Request ended, data: $data",
@@ -246,7 +251,9 @@ class Config<Data>(private val key: String) {
         )
 
         val execution = execution ?: throw RequestNotImplementedException()
-        val data = execution.invoke()
+        val data = withContext(handler.scope.coroutineContext) {
+            execution.invoke(this)
+        }
         handler.logInfo(
             area = "Config",
             message = "Request ended, data: $data",
@@ -274,7 +281,9 @@ class Config<Data>(private val key: String) {
             level = LogLevel.ONE
         )
         val execution = execution ?: throw RequestNotImplementedException()
-        val data = execution.invoke()
+        val data = withContext(handler.scope.coroutineContext) {
+            execution.invoke(this)
+        }
         handler.logInfo(
             area = "Config",
             message = "Request ended, data: $data",
